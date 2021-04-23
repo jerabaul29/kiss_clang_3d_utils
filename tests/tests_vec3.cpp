@@ -174,4 +174,84 @@ TEST_CASE("vec3 normalize"){
     REQUIRE( vec3_equal(&v4, &v4_res) );
 }
 
-// normalize
+TEST_CASE("quat norm"){
+    quat q {1.0, 2.0, 3.0, 4.0};
+    REQUIRE( quat_norm(&q) == Approx(5.477225575051661) );
+}
+
+TEST_CASE("quat norm_square"){
+    quat q {1.0, 2.0, 3.0, 4.0};
+    REQUIRE( quat_norm_square(&q) == Approx(30.0) );
+}
+
+TEST_CASE("quat conj"){
+    quat q        {1.0,  2.0,  3.0,  4.0};
+    quat q_result {1.0, -2.0, -3.0, -4.0};
+
+    quat_conj(&q);
+    REQUIRE( quat_equal(&q, &q_result) );
+}
+
+TEST_CASE("quat is_unitary"){
+    quat q_unit_1 {1.0, 0.0, 0.0, 0.0};
+    REQUIRE( quat_is_unitary(&q_unit_1) );
+
+    quat q_unit_2 {0.0, 1.0, 0.0, 0.0};
+    REQUIRE( quat_is_unitary(&q_unit_2) );
+
+    quat q_unit_3 {0.5, 0.5, 0.5, 0.5};
+    REQUIRE( quat_is_unitary(&q_unit_3) );
+}
+
+TEST_CASE("quat prod"){
+    quat const q_r {1.0, 0.0, 0.0, 0.0};
+    quat const q_i {0.0, 1.0, 0.0, 0.0};
+    quat const q_j {0.0, 0.0, 1.0, 0.0};
+    quat const q_k {0.0, 0.0, 0.0, 1.0};
+
+    quat const q_mr {-1.0, 0.0, 0.0, 0.0};
+    quat const q_mi {0.0, -1.0, 0.0, 0.0};
+    quat const q_mj {0.0, 0.0, -1.0, 0.0};
+    quat const q_mk {0.0, 0.0, 0.0, -1.0};
+
+    quat q_result {0.0, 0.0, 0.0, 0.0};
+
+    // see the multiplication table for unit quaternions, for example on the
+    // wikipedia page.
+
+    quat_prod(&q_r, &q_r, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_r) );
+    quat_prod(&q_r, &q_i, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_i) );
+    quat_prod(&q_r, &q_j, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_j) );
+    quat_prod(&q_r, &q_k, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_k) );
+
+    quat_prod(&q_i, &q_r, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_i) );
+    quat_prod(&q_i, &q_i, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_mr) );
+    quat_prod(&q_i, &q_j, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_k) );
+    quat_prod(&q_i, &q_k, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_mj) );
+
+    quat_prod(&q_j, &q_r, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_j) );
+    quat_prod(&q_j, &q_i, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_mk) );
+    quat_prod(&q_j, &q_j, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_mr) );
+    quat_prod(&q_j, &q_k, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_i) );
+
+    quat_prod(&q_k, &q_r, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_k) );
+    quat_prod(&q_k, &q_i, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_j) );
+    quat_prod(&q_k, &q_j, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_mi) );
+    quat_prod(&q_k, &q_k, &q_result);
+    REQUIRE( quat_equal(&q_result, &q_mr) );
+}
