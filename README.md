@@ -17,3 +17,5 @@ Made available under the MIT license: no guarantees whatsoever, but do whatever 
 ## Tests
 
 Tests are in the **tests** folder. For simplicity, the tests are run using *Catch2*, a cpp-lang framework for unit testing. To run all tests, just run the **tests/script_compile_run_tests.sh**.
+
+TODO: explain the philosophy: use C for the core library because most portable; use C++ for the stuff around (printing and testing) because more convenient.

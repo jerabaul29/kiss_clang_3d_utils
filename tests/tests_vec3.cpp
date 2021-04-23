@@ -1,5 +1,9 @@
 #include "catch.hpp"
 #include "../src/kiss_clang_3d.h"
+#include "../src/cpp_printing_utils.h"
+
+// TODO: in all tests with some abs etc, add some cases with "small"
+// values, such as 0.1, 0.2, 0.3.
 
 TEST_CASE("vec3 is_null"){
     vec3 v1 {0.0, 0.0, 0.0};
@@ -367,7 +371,7 @@ TEST_CASE("rotation_to_quat"){
 
     // test some standard rotations
 
-    #define SQRT_2_O_2 (0.7071067811865476)
+    F_TYPE sqrt_2_o_2 {0.7071067811865476};
 
     vec3 axis_i {1.0, 0.0, 0.0};
     vec3 axis_j {0.0, 1.0, 0.0};
@@ -383,7 +387,7 @@ TEST_CASE("rotation_to_quat"){
         degrees_90_as_rad
     );
 
-    quat rot_i_90 {SQRT_2_O_2, SQRT_2_O_2, 0.0, 0.0};
+    quat rot_i_90 {sqrt_2_o_2, sqrt_2_o_2, 0.0, 0.0};
     REQUIRE( crrt_bool_result );
     REQUIRE( quat_equal(&crrt_quat_result, &rot_i_90) );
 
@@ -394,7 +398,7 @@ TEST_CASE("rotation_to_quat"){
         degrees_90_as_rad
     );
 
-    quat rot_j_90 {SQRT_2_O_2, 0.0, SQRT_2_O_2, 0.0};
+    quat rot_j_90 {sqrt_2_o_2, 0.0, sqrt_2_o_2, 0.0};
     REQUIRE( crrt_bool_result );
     REQUIRE( quat_equal(&crrt_quat_result, &rot_j_90) );
 
@@ -405,7 +409,7 @@ TEST_CASE("rotation_to_quat"){
         degrees_90_as_rad
     );
 
-    quat rot_k_90 {SQRT_2_O_2, 0.0, 0.0, SQRT_2_O_2};
+    quat rot_k_90 {sqrt_2_o_2, 0.0, 0.0, sqrt_2_o_2};
     REQUIRE( crrt_bool_result );
     REQUIRE( quat_equal(&crrt_quat_result, &rot_k_90) );
 
@@ -435,6 +439,88 @@ TEST_CASE("quat_to_rotation"){
     bool crrt_bool_result;
     vec3 crrt_axis_result;
     F_TYPE crrt_angle_result;
+
+    quat invalid_quat {1.0, 2.0, 3.0, 4.0};
+    crrt_bool_result = quat_to_rotation(
+        &crrt_axis_result,
+        &crrt_angle_result,
+        &invalid_quat
+    );
+    REQUIRE( !crrt_bool_result );
+
+    vec3 axis_i {1.0, 0.0, 0.0};
+    vec3 axis_j {0.0, 1.0, 0.0};
+    vec3 axis_k {0.0, 0.0, 1.0};
+
+    F_TYPE sqrt_2_o_2 {0.7071067811865476};
+    F_TYPE pi_over_2 {1.5707963267948966};
+
+    quat quat_rot_i {sqrt_2_o_2, sqrt_2_o_2, 0.0, 0.0};
+    quat quat_rot_j {sqrt_2_o_2, 0.0, sqrt_2_o_2, 0.0};
+    quat quat_rot_k {sqrt_2_o_2, 0.0, 0.0, sqrt_2_o_2};
+
+    // canonical rotations
+
+    crrt_bool_result = quat_to_rotation(
+        &crrt_axis_result,
+        &crrt_angle_result,
+        &quat_rot_i
+    );
+    REQUIRE( crrt_bool_result );
+    REQUIRE( F_TYPE_ABS(crrt_angle_result - pi_over_2) <= 1e-6 );
+    REQUIRE( vec3_equal(&crrt_axis_result, &axis_i) );
+
+    crrt_bool_result = quat_to_rotation(
+        &crrt_axis_result,
+        &crrt_angle_result,
+        &quat_rot_j
+    );
+    REQUIRE( crrt_bool_result );
+    REQUIRE( F_TYPE_ABS(crrt_angle_result - pi_over_2) <= 1e-6 );
+    REQUIRE( vec3_equal(&crrt_axis_result, &axis_j) );
+
+    crrt_bool_result = quat_to_rotation(
+        &crrt_axis_result,
+        &crrt_angle_result,
+        &quat_rot_k
+    );
+    REQUIRE( crrt_bool_result );
+    REQUIRE( F_TYPE_ABS(crrt_angle_result - pi_over_2) <= 1e-6 );
+    REQUIRE( vec3_equal(&crrt_axis_result, &axis_k) );
+
+    // one arbitrary rotation
+    // TODO: would be great to add a couple
+}
+
+TEST_CASE("convert_back_forth_rotation_quaternion"){
+    vec3 const rotation_axis_1 {1.0, 2.0, 3.0};
+    F_TYPE const rotation_angle_rad_1 {0.423};
+    quat rot_as_quat_1;
+    vec3 rotation_axis_back_1;
+    F_TYPE rotation_angle_rad_back_1;
+    bool flag_first_1;
+    bool flag_second_1;
+
+    flag_first_1 = rotation_to_quat(
+        &rot_as_quat_1,
+        &rotation_axis_1,
+        rotation_angle_rad_1
+    );
+
+    flag_second_1 = quat_to_rotation(
+        &rotation_axis_back_1,
+        &rotation_angle_rad_back_1,
+        &rot_as_quat_1
+    );
+
+    vec3_scale(&rotation_axis_back_1, vec3_norm(&rotation_axis_1));
+
+    REQUIRE( flag_first_1 );
+    REQUIRE( flag_second_1 );
+    REQUIRE( vec3_equal(&rotation_axis_1, &rotation_axis_back_1) );
+    REQUIRE( F_TYPE_ABS(rotation_angle_rad_1 - rotation_angle_rad_back_1) <= DEFAULT_TOL );
+
+    // TODO: add some extra cases
 
 }
 

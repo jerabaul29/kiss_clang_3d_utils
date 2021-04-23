@@ -3,6 +3,16 @@
 
 #include <cmath>
 
+// TODO
+// 1
+// rather than having an annoying (axis, angle) format for rotations,
+// define a custom struct for rotation definition
+// 2
+// add a function to determine if 2 rotations are identical but written
+// in different ways
+// 3 
+// add a function to reduce a rotation to a canonical form
+
 // ------------------------------------------------------------
 // MACROS
 // ------------------------------------------------------------
@@ -37,17 +47,18 @@
     #define F_TYPE_1 (1.0f)
     #define F_TYPE_0 (0.0f)
     #define F_TYPE_PI (3.14159265358979323846f)
+    #define DEFAULT_TOL (1.0e-4)
 #elif (F_TYPE == double)
     #define F_TYPE_2 (2.0d)
     #define F_TYPE_1 (1.0d)
     #define F_TYPE_0 (0.0d)
     #define F_TYPE_PI (3.14159265358979323846d)
+    #define DEFAULT_TOL (1.0e-6)
 #else
     #error "need to specify absolute value function"
 #endif
 
 // the default tolerance for performing floating point comparisons
-#define DEFAULT_TOL (1.0e-6)
 
 
 // ------------------------------------------------------------
