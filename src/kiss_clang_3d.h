@@ -10,9 +10,38 @@
 // our fundamental type; this will be the type used for all
 // members of vectors, quaternions, DCM matrices, etc.
 #define F_TYPE float
+//#define F_TYPE double
+
+// a bit of type-tuning to F_TYPE
+// the C "absolute value" function, https://www.cplusplus.com/reference/cmath/fabs/
+// the C cos and sine functions
+#if (F_TYPE == float)
+    #define F_TYPE_ABS(x) fabsf(x)
+    #define F_TYPE_COS(x) cosf(x)
+    #define F_TYPE_SIN(x) sinf(x)
+#elif (F_TYPE == double)
+    #define F_TYPE_COS(x) cos(x)
+    #define F_TYPE_SIN(x) sin(x)
+    #define F_TYPE_ABS(x) fabs(x)
+#else
+    #error "need to specify absolute value function"
+#endif
+
+// common numerical constants, in the right types
+#if (F_TYPE == float)
+    #define F_TYPE_2 (2.0f)
+    #define F_TYPE_1 (1.0f)
+    #define F_TYPE_0 (0.0f)
+#elif (F_TYPE == double)
+    #define F_TYPE_2 (2.0d)
+    #define F_TYPE_1 (1.0d)
+    #define F_TYPE_0 (0.0d)
+#else
+    #error "need to specify absolute value function"
+#endif
 
 // the default tolerance for performing floating point comparisons
-#define DEFAULT_TOL (1.0e-12)
+#define DEFAULT_TOL (1.0e-6)
 
 
 // ------------------------------------------------------------
@@ -131,9 +160,21 @@ Multiply 2 quaternions, and write the result in a third one
 */
 void quat_prod(quat const * q_left, quat const * q_right, quat * q_result);
 
-// sum
-// sub
-// inv
+/*
+Add one quaternion to another, in place, inside an accumulator
+*/
+void quat_add(quat * q_acc, quat const * q_add);
+
+/*
+Subtract one quaternion to another, in place, inside an accumulator
+*/
+void quat_sub(quat * q_acc, quat const * q_sub);
+
+/*
+Inverse of a quaternion, in place. This works only for non zero quat,
+so return a boolean flag (true if success).
+*/
+bool quat_inv(quat * q, F_TYPE tolerance=DEFAULT_TOL);
 
 // ---------------------------------------------
 // QUAT and VECT functions
@@ -143,17 +184,12 @@ void quat_prod(quat const * q_left, quat const * q_right, quat * q_result);
 Get a vector from a quaternion. This makes sense only if the quaternion is a "pure vector",
 return a bool indicating if this is the case.
 */
-bool quat_to_vec3(quat const * q, vec3 * v_out);
+bool quat_to_vec3(quat const * q, vec3 * v_out, F_TYPE tolerance=DEFAULT_TOL);
 
 /*
 Write the vector part into a pure vector quaternion
 */
 void vec3_to_quat(vec3 const * v, quat * q_out);
-
-/*
-Rotate a vector by a given quaternion, using the (fast) Rodriguez method
-*/
-void rotate_by_quat(vec3 * v, quat const * q);
 
 /*
 Write a "rotation quaternion" given the rotation axis and angle in rad.
@@ -166,23 +202,30 @@ only for unit quaternions, so return bool if is unit.
 */
 bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat const * q_rotation);
 
+/*
+Rotate a vector by a given quaternion, using the (fast) Rodriguez method.
+This is only valid for unit quaternions, so provide a return flag to indicate
+validity.
+*/
+bool rotate_by_quat(vec3 * v, quat const * q);
+
 // ------------------------------------------------------------
 // DEFINITIONS
 // ------------------------------------------------------------
 
 bool vec3_is_null(vec3 const * v1, F_TYPE tolerance){
     return(
-        abs(v1->i) < tolerance &&
-        abs(v1->j) < tolerance &&
-        abs(v1->k) < tolerance
+        F_TYPE_ABS(v1->i) <= tolerance &&
+        F_TYPE_ABS(v1->j) <= tolerance &&
+        F_TYPE_ABS(v1->k) <= tolerance
     );
 }
 
 bool vec3_equal(vec3 const * v1, vec3 const * v2, F_TYPE tolerance){
     return(
-        abs(v1->i - v2->i) < tolerance &&
-        abs(v1->j - v2->j) < tolerance &&
-        abs(v1->k - v2->k) < tolerance
+        F_TYPE_ABS(v1->i - v2->i) <= tolerance &&
+        F_TYPE_ABS(v1->j - v2->j) <= tolerance &&
+        F_TYPE_ABS(v1->k - v2->k) <= tolerance
     );
 }
 
@@ -238,7 +281,7 @@ bool vec3_normalize(vec3 * v){
     }
     else{
         F_TYPE norm = vec3_norm(v);
-        vec3_scale(v, 1.0 / norm);
+        vec3_scale(v, F_TYPE_1 / norm);
         return true;
     }
 }
@@ -259,10 +302,10 @@ F_TYPE quat_norm_square(quat const * q){
 
 bool quat_equal(quat const * q_1, quat const * q_2, F_TYPE tolerance){
     return(
-        abs(q_1->r - q_2->r) < tolerance &&
-        abs(q_1->i - q_2->i) < tolerance &&
-        abs(q_1->j - q_2->j) < tolerance &&
-        abs(q_1->k - q_2->k) < tolerance
+        F_TYPE_ABS(q_1->r - q_2->r) <= tolerance &&
+        F_TYPE_ABS(q_1->i - q_2->i) <= tolerance &&
+        F_TYPE_ABS(q_1->j - q_2->j) <= tolerance &&
+        F_TYPE_ABS(q_1->k - q_2->k) <= tolerance
     );
 }
 
@@ -274,7 +317,7 @@ void quat_conj(quat * q){
 
 bool quat_is_unitary(quat const * q, F_TYPE tolerance){
     return(
-        abs(quat_norm_square(q) - 1.0) < tolerance
+        F_TYPE_ABS(quat_norm_square(q) - F_TYPE_1) < tolerance
     );
 }
 
@@ -283,6 +326,100 @@ void quat_prod(quat const * q_left, quat const * q_right, quat * q_result){
     q_result->i = q_left->r * q_right->i  +  q_left->i * q_right->r  +  q_left->j * q_right->k  -  q_left->k * q_right->j;
     q_result->j = q_left->r * q_right->j  -  q_left->i * q_right->k  +  q_left->j * q_right->r  +  q_left->k * q_right->i;
     q_result->k = q_left->r * q_right->k  +  q_left->i * q_right->j  -  q_left->j * q_right->i  +  q_left->k * q_right->r;
+}
+
+void quat_add(quat * q_acc, quat const * q_add){
+    q_acc->r += q_add->r;
+    q_acc->i += q_add->i;
+    q_acc->j += q_add->j;
+    q_acc->k += q_add->k;
+}
+
+void quat_sub(quat * q_acc, quat const * q_sub){
+    q_acc->r -= q_sub->r;
+    q_acc->i -= q_sub->i;
+    q_acc->j -= q_sub->j;
+    q_acc->k -= q_sub->k;
+}
+
+bool quat_inv(quat * q, F_TYPE tolerance){
+    F_TYPE norm_square = quat_norm_square(q);
+
+    if (F_TYPE_ABS(norm_square < tolerance)){
+        return false;
+    }
+    else{
+        q->r /= norm_square;
+        q->i = -q->i / norm_square;
+        q->j = -q->j / norm_square;
+        q->k = -q->k / norm_square;
+
+        return true;
+    }
+}
+
+bool quat_to_vec3(quat const * q, vec3 * v_out, F_TYPE tolerance){
+    v_out->i = q->i;
+    v_out->j = q->j;
+    v_out->k = q->k;
+
+    if (F_TYPE_ABS(q->r) > tolerance){
+        return false;
+    }
+    else{
+        return true;
+    }
+}
+
+void vec3_to_quat(vec3 const * v, quat * q_out){
+    q_out->r = F_TYPE_0;
+    q_out->i = v->i;
+    q_out->j = v->j;
+    q_out->k = v->k;
+}
+
+void rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotation_angle_rad){
+    F_TYPE half_rotation_angle = rotation_angle_rad / F_TYPE_2;
+    F_TYPE cos_of_half = F_TYPE_COS(half_rotation_angle);
+    F_TYPE sin_of_half = F_TYPE_SIN(half_rotation_angle);
+    F_TYPE norm_of_axis = vec3_norm(rotation_axis);
+
+    q->r = cos_of_half;
+    q->i = rotation_axis->i / norm_of_axis * sin_of_half;
+    q->j = rotation_axis->j / norm_of_axis * sin_of_half;
+    q->k = rotation_axis->k / norm_of_axis * sin_of_half;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool rotate_by_quat(vec3 * v, quat const * q){
+
 }
 
 #endif

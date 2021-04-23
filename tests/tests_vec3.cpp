@@ -217,7 +217,8 @@ TEST_CASE("quat prod"){
     quat q_result {0.0, 0.0, 0.0, 0.0};
 
     // see the multiplication table for unit quaternions, for example on the
-    // wikipedia page.
+    // wikipedia page. That should be enough to check that all formula are
+    // correct.
 
     quat_prod(&q_r, &q_r, &q_result);
     REQUIRE( quat_equal(&q_result, &q_r) );
@@ -254,4 +255,85 @@ TEST_CASE("quat prod"){
     REQUIRE( quat_equal(&q_result, &q_mi) );
     quat_prod(&q_k, &q_k, &q_result);
     REQUIRE( quat_equal(&q_result, &q_mr) );
+}
+
+TEST_CASE("quat add"){
+    quat q_acc {1.0, 2.0, 3.0, 4.0};
+    quat q_add {10.0, 20.0, 30.0, 40.0};
+    quat q_res {11.0, 22.0, 33.0, 44.0};
+
+    quat_add(&q_acc, &q_add);
+    REQUIRE( quat_equal(&q_acc, &q_res));
+}
+
+TEST_CASE("quat sub"){
+    quat q_acc {1.0, 2.0, 3.0, 4.0};
+    quat q_sub {10.0, 20.0, 30.0, 40.0};
+    quat q_res {-9.0, -18.0, -27.0, -36.0};
+
+    quat_sub(&q_acc, &q_sub);
+    REQUIRE( quat_equal(&q_acc, &q_res));
+}
+
+TEST_CASE("quat inv"){
+    quat q {0.5, 0.4, 0.3, 0.2};
+    quat q_res {0.9259259259259258, -0.7407407407407407, -0.5555555555555555, -0.37037037037037035};
+
+    bool res_1;
+    res_1 = quat_inv(&q);
+
+    REQUIRE( res_1 );
+    REQUIRE( quat_equal(&q, &q_res) );
+
+    quat q_null {0.0, 0.0, 0.0, 0.0};
+    bool res_2;
+    res_2 = quat_inv(&q_null);
+
+    REQUIRE( !res_2 );
+}
+
+TEST_CASE("quat_to_vec3"){
+    quat q_1     {0.0, 1.0, 2.0, 3.0};
+    vec3 v_1;
+    vec3 v_1_res {     1.0, 2.0, 3.0};
+    bool b_1;
+
+    b_1 = quat_to_vec3(&q_1, &v_1);
+    REQUIRE( b_1 );
+    REQUIRE( vec3_equal(&v_1, &v_1_res) );
+
+    // quat q_2     {-1.0, 1.0, 2.0, 3.0};
+    quat q_2     {0.2, 1.0, 2.0, 3.0};
+    vec3 v_2;
+    vec3 v_2_res {     1.0, 2.0, 3.0};
+    bool b_2;
+
+    b_2 = quat_to_vec3(&q_2, &v_2);
+    REQUIRE( !b_2 );
+    REQUIRE( vec3_equal(&v_2, &v_2_res) );
+}
+
+TEST_CASE("vec3_to_quat"){
+    vec3 const v {1.0, 2.0, 3.0};
+    quat q;
+    quat q_res {0.0, 1.0, 2.0, 3.0};
+
+    vec3_to_quat(&v, &q);
+    REQUIRE( quat_equal(&q, &q_res) );
+}
+
+TEST_CASE("rotation_to_quat"){
+
+}
+
+
+
+
+
+
+
+
+
+TEST_CASE("rotate_by_quat"){
+    // we test all rotations by unit vectors
 }
