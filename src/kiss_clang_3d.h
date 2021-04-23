@@ -12,6 +12,10 @@
 // in different ways
 // 3 
 // add a function to reduce a rotation to a canonical form
+// 4
+// check for more optimal ways to compute quaternion product, rotation by
+// quaternion, and both of these using specifically unit quaternions; for this,
+// write funcs to work with specifically unit quaternions
 
 // ------------------------------------------------------------
 // MACROS
@@ -38,7 +42,7 @@
     #define F_TYPE_SIN(x) sin(x)
     #define F_TYPE_ACOS(x) acos(x)
 #else
-    #error "need to specify absolute value function"
+    #error "need to specify math functions to use with type F_TYPE"
 #endif
 
 // common numerical constants, in the right types
@@ -55,15 +59,19 @@
     #define F_TYPE_PI (3.14159265358979323846d)
     #define DEFAULT_TOL (1.0e-6)
 #else
-    #error "need to specify absolute value function"
+    #error "need to specify numerical constants to use with type F_TYPE"
 #endif
 
 // the default tolerance for performing floating point comparisons
+// TODO: set difference tol depending on F_TYPE
 
 
 // ------------------------------------------------------------
 // STRUCTS
 // ------------------------------------------------------------
+
+// TODO
+// change struct names to Maj first
 
 // --------------------------------------------------
 // 3D vector, components i, j, k
@@ -80,6 +88,13 @@ struct quat {
     F_TYPE i;
     F_TYPE j;
     F_TYPE k;
+};
+
+// --------------------------------------------------
+// rotation, provided as a vector (v_i,j,k) and an angle in rads (a)
+struct varot {
+    vec3 v;
+    F_TYPE a;
 };
 
 
