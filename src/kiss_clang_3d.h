@@ -19,10 +19,12 @@
     #define F_TYPE_ABS(x) fabsf(x)
     #define F_TYPE_COS(x) cosf(x)
     #define F_TYPE_SIN(x) sinf(x)
+    #define F_TYPE_ATAN2(x, y) atan2f(x, y)
 #elif (F_TYPE == double)
     #define F_TYPE_COS(x) cos(x)
     #define F_TYPE_SIN(x) sin(x)
     #define F_TYPE_ABS(x) fabs(x)
+    #define F_TYPE_ATAN2(x, y) atan2(x, y)
 #else
     #error "need to specify absolute value function"
 #endif
@@ -32,10 +34,12 @@
     #define F_TYPE_2 (2.0f)
     #define F_TYPE_1 (1.0f)
     #define F_TYPE_0 (0.0f)
+    #define F_TYPE_PI (3.14159265358979323846f)
 #elif (F_TYPE == double)
     #define F_TYPE_2 (2.0d)
     #define F_TYPE_1 (1.0d)
     #define F_TYPE_0 (0.0d)
+    #define F_TYPE_PI (3.14159265358979323846d)
 #else
     #error "need to specify absolute value function"
 #endif
@@ -193,21 +197,23 @@ void vec3_to_quat(vec3 const * v, quat * q_out);
 
 /*
 Write a "rotation quaternion" given the rotation axis and angle in rad.
+This works only for non null axis vector, except if the transformation is
+the identity.
 */
-void rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotation_angle_rad);
+bool rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotation_angle_rad, F_TYPE tolerance=DEFAULT_TOL);
 
 /*
 Extract the rotation axis and angle from a unit quaternion; this works
 only for unit quaternions, so return bool if is unit.
 */
-bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat const * q_rotation);
+bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat const * q_rotation, F_TYPE tolerance=DEFAULT_TOL);
 
 /*
 Rotate a vector by a given quaternion, using the (fast) Rodriguez method.
 This is only valid for unit quaternions, so provide a return flag to indicate
 validity.
 */
-bool rotate_by_quat(vec3 * v, quat const * q);
+bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance=DEFAULT_TOL);
 
 // ------------------------------------------------------------
 // DEFINITIONS
@@ -378,7 +384,21 @@ void vec3_to_quat(vec3 const * v, quat * q_out){
     q_out->k = v->k;
 }
 
-void rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotation_angle_rad){
+bool rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotation_angle_rad, F_TYPE tolerance){
+    if (vec3_is_null(rotation_axis)){
+        if (F_TYPE_ABS(rotation_angle_rad) <= tolerance){
+            q->r = F_TYPE_1;
+            q->i = F_TYPE_0;
+            q->j = F_TYPE_0;
+            q->k = F_TYPE_0;
+
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
     F_TYPE half_rotation_angle = rotation_angle_rad / F_TYPE_2;
     F_TYPE cos_of_half = F_TYPE_COS(half_rotation_angle);
     F_TYPE sin_of_half = F_TYPE_SIN(half_rotation_angle);
@@ -388,6 +408,8 @@ void rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotatio
     q->i = rotation_axis->i / norm_of_axis * sin_of_half;
     q->j = rotation_axis->j / norm_of_axis * sin_of_half;
     q->k = rotation_axis->k / norm_of_axis * sin_of_half;
+
+    return true;
 }
 
 

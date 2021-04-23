@@ -323,6 +323,94 @@ TEST_CASE("vec3_to_quat"){
 }
 
 TEST_CASE("rotation_to_quat"){
+    quat const identity {1.0, 0.0, 0.0, 0.0};
+    vec3 const null_vector{0.0, 0.0, 0.0};
+
+    quat crrt_quat_result;
+    bool crrt_bool_result;
+
+    // null vector for identity is ok
+    crrt_bool_result = rotation_to_quat(
+        &crrt_quat_result,
+        &null_vector,
+        0.0
+    );
+
+    REQUIRE( crrt_bool_result );
+    REQUIRE( quat_equal(&crrt_quat_result, &identity) );
+
+    // null vector for non identity is not ok
+    crrt_bool_result = rotation_to_quat(
+        &crrt_quat_result,
+        &null_vector,
+        5.0
+    );
+
+    REQUIRE( !crrt_bool_result );
+
+    // test some standard rotations
+
+    #define SQRT_2_O_2 (0.7071067811865476)
+
+    vec3 axis_i {1.0, 0.0, 0.0};
+    vec3 axis_j {0.0, 1.0, 0.0};
+    vec3 axis_k {0.0, 0.0, 1.0};
+
+    F_TYPE degrees_90_as_rad {F_TYPE_PI / 2.0};
+    F_TYPE degrees_180_as_rad {F_TYPE_PI};
+
+    // i
+    crrt_bool_result = rotation_to_quat(
+        &crrt_quat_result,
+        &axis_i,
+        degrees_90_as_rad
+    );
+
+    quat rot_i_90 {SQRT_2_O_2, SQRT_2_O_2, 0.0, 0.0};
+    REQUIRE( crrt_bool_result );
+    REQUIRE( quat_equal(&crrt_quat_result, &rot_i_90) );
+
+    // j
+    crrt_bool_result = rotation_to_quat(
+        &crrt_quat_result,
+        &axis_j,
+        degrees_90_as_rad
+    );
+
+    quat rot_j_90 {SQRT_2_O_2, 0.0, SQRT_2_O_2, 0.0};
+    REQUIRE( crrt_bool_result );
+    REQUIRE( quat_equal(&crrt_quat_result, &rot_j_90) );
+
+    // k
+    crrt_bool_result = rotation_to_quat(
+        &crrt_quat_result,
+        &axis_k,
+        degrees_90_as_rad
+    );
+
+    quat rot_k_90 {SQRT_2_O_2, 0.0, 0.0, SQRT_2_O_2};
+    REQUIRE( crrt_bool_result );
+    REQUIRE( quat_equal(&crrt_quat_result, &rot_k_90) );
+
+    // one arbitrary rotation
+
+    vec3 arbitrary_axis {1.0, 2.0, 3.0};
+    F_TYPE arbitrary_angle {0.943};
+
+    crrt_bool_result = rotation_to_quat(
+        &crrt_quat_result,
+        &arbitrary_axis,
+        arbitrary_angle
+    );
+
+    quat rot_res {
+        0.8908879560078727,
+        0.12139623724461583,
+        0.24279247448923166,
+        0.3641887117338474
+    };
+    REQUIRE( crrt_bool_result );
+    REQUIRE( quat_equal(&crrt_quat_result, &rot_res) );
 
 }
 
