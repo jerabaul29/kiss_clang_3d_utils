@@ -174,6 +174,23 @@ TEST_CASE("vec3 normalize"){
     REQUIRE( vec3_equal(&v4, &v4_res) );
 }
 
+TEST_CASE("vec3 colinear"){
+    vec3 v1 {1.0, 1.0, 1.0};
+    vec3 w1 {2.0, 2.0, 2.0};
+
+    REQUIRE( vec3_colinear(&v1, &w1) );
+
+    vec3 v2 {0.0, 1.0, 1.0};
+    vec3 w2 {0.0, 2.0, 2.0};
+
+    REQUIRE( vec3_colinear(&v2, &w2) );
+
+    vec3 v3 {0.0, 1.0, 1.0};
+    vec3 w3 {1.0, 2.0, 2.0};
+
+    REQUIRE( !vec3_colinear(&v3, &w3) );
+}
+
 TEST_CASE("quat norm"){
     quat q {1.0, 2.0, 3.0, 4.0};
     REQUIRE( quat_norm(&q) == Approx(5.477225575051661) );
@@ -414,7 +431,12 @@ TEST_CASE("rotation_to_quat"){
 
 }
 
+TEST_CASE("quat_to_rotation"){
+    bool crrt_bool_result;
+    vec3 crrt_axis_result;
+    F_TYPE crrt_angle_result;
 
+}
 
 
 

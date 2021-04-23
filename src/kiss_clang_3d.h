@@ -17,14 +17,16 @@
 // the C cos and sine functions
 #if (F_TYPE == float)
     #define F_TYPE_ABS(x) fabsf(x)
+    #define F_TYPE_SQRT(x) sqrtf(x)
     #define F_TYPE_COS(x) cosf(x)
     #define F_TYPE_SIN(x) sinf(x)
-    #define F_TYPE_ATAN2(x, y) atan2f(x, y)
+    #define F_TYPE_ACOS(x) acosf(x)
 #elif (F_TYPE == double)
+    #define F_TYPE_ABS(x) fabs(x)
+    #define F_TYPE_SQRT(x) sqrt(x)
     #define F_TYPE_COS(x) cos(x)
     #define F_TYPE_SIN(x) sin(x)
-    #define F_TYPE_ABS(x) fabs(x)
-    #define F_TYPE_ATAN2(x, y) atan2(x, y)
+    #define F_TYPE_ACOS(x) acos(x)
 #else
     #error "need to specify absolute value function"
 #endif
@@ -129,6 +131,11 @@ return a bool if was able to normalize or not
 */
 bool vec3_normalize(vec3 * v);
 
+/*
+Return wether 2 vectors are colinear
+*/
+bool vec3_colinear(vec3 const * v, vec3 const * w, F_TYPE tolerance=DEFAULT_TOL);
+
 // ---------------------------------------------
 // QUAT functions
 // ---------------------------------------------
@@ -204,7 +211,8 @@ bool rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotatio
 
 /*
 Extract the rotation axis and angle from a unit quaternion; this works
-only for unit quaternions, so return bool if is unit.
+only for unit quaternions, so return bool if is unit. We are polite and we
+return a rotation axis that has unit norm.
 */
 bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat const * q_rotation, F_TYPE tolerance=DEFAULT_TOL);
 
@@ -243,7 +251,7 @@ F_TYPE vec3_norm_square(vec3 const * v){
 
 F_TYPE vec3_norm(vec3 const * v){
     return (
-        sqrt(
+        F_TYPE_SQRT(
                 (v->i * v->i) + (v->j * v->j) + (v->k * v->k)
         )
     );
@@ -292,9 +300,15 @@ bool vec3_normalize(vec3 * v){
     }
 }
 
+bool vec3_colinear(vec3 const * v, vec3 const * w, F_TYPE tolerance){
+    vec3 result_cross_product;
+    vec3_cross(v, w, &result_cross_product);
+    return vec3_is_null(&result_cross_product, tolerance);
+}
+
 F_TYPE quat_norm(quat const * q){
     return(
-        sqrt(
+        F_TYPE_SQRT(
             q->r * q->r + q->i * q->i + q->j * q->j + q->k * q->k
         )
     );
@@ -412,7 +426,21 @@ bool rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotatio
     return true;
 }
 
+// TODO: write test
+bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat const * q_rotation, F_TYPE tolerance){
+    if (!quat_is_unitary(q_rotation, tolerance)){
+        return false;
+    }
+    else{
+        *rotation_angle_rad = F_TYPE_2 * F_TYPE_ACOS(q_rotation->r);
+        F_TYPE sin_half_angle = F_TYPE_SQRT(F_TYPE_1 - q_rotation->r * q_rotation->r);
+        rotation_axis->i = q_rotation->i / sin_half_angle;
+        rotation_axis->j = q_rotation->j / sin_half_angle;
+        rotation_axis->k = q_rotation->k / sin_half_angle;
 
+        return true;
+    }
+}
 
 
 
