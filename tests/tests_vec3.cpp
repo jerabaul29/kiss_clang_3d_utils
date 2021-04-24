@@ -576,6 +576,8 @@ TEST_CASE("rotate_by_quat"){
 
     // check the basis rotations
 
+    // rotating by i
+
     // i, rotating by i: i
     vec3_copy(&axis_i, &working_vec3);
     rotate_by_quat(&working_vec3, &quat_rot_i);
@@ -585,6 +587,43 @@ TEST_CASE("rotate_by_quat"){
     vec3_copy(&axis_j, &working_vec3);
     rotate_by_quat(&working_vec3, &quat_rot_i);
     REQUIRE( vec3_equal(&axis_k, &working_vec3) );
-    
 
+    // k, rotating by i: -j
+    vec3_copy(&axis_k, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_i);
+    REQUIRE( vec3_equal(&axis_mj, &working_vec3) );
+
+    // rotating by j
+
+    // i, rotating by j: -k
+    vec3_copy(&axis_i, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_j);
+    REQUIRE( vec3_equal(&axis_mk, &working_vec3) );
+
+    // j, rotating by j: j
+    vec3_copy(&axis_j, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_j);
+    REQUIRE( vec3_equal(&axis_j, &working_vec3) );
+
+    // k, rotating by j: i
+    vec3_copy(&axis_k, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_j);
+    REQUIRE( vec3_equal(&axis_i, &working_vec3) );
+
+    // rotating by k
+
+    // i, rotating by k: j
+    vec3_copy(&axis_i, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_k);
+    REQUIRE( vec3_equal(&axis_j, &working_vec3) );
+
+    // j, rotating by k: -i
+    vec3_copy(&axis_j, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_k);
+    REQUIRE( vec3_equal(&axis_mi, &working_vec3) );
+
+    // k, rotating by k: k
+    vec3_copy(&axis_k, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_k);
+    REQUIRE( vec3_equal(&axis_k, &working_vec3) );
 }
