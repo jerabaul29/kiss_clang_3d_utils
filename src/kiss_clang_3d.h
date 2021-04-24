@@ -23,43 +23,46 @@
 
 // our fundamental type; this will be the type used for all
 // members of vectors, quaternions, DCM matrices, etc.
-#define F_TYPE float
-//#define F_TYPE double
+// double
+#define F_TYPE_SWITCH 'D'
+// float
+// #define F_TYPE_SWITCH 'F'
 
 // a bit of type-tuning to F_TYPE
+// the F_TYPE
 // the C "absolute value" function, https://www.cplusplus.com/reference/cmath/fabs/
 // the C cos and sine functions
-#if (F_TYPE == float)
+// common numeric constants in the right types
+#if (F_TYPE_SWITCH == 'F')
+    #define F_TYPE double
+
+    #define F_TYPE_2 (2.0f)
+    #define F_TYPE_1 (1.0f)
+    #define F_TYPE_0 (0.0f)
+    #define F_TYPE_PI (3.14159265358979323846f)
+    #define DEFAULT_TOL (1.0e-4)
+
     #define F_TYPE_ABS(x) fabsf(x)
     #define F_TYPE_SQRT(x) sqrtf(x)
     #define F_TYPE_COS(x) cosf(x)
     #define F_TYPE_SIN(x) sinf(x)
     #define F_TYPE_ACOS(x) acosf(x)
-#elif (F_TYPE == double)
+#elif (F_TYPE_SWITCH == 'D')
+    #define F_TYPE double
+
+    #define F_TYPE_2 (2.0)
+    #define F_TYPE_1 (1.0)
+    #define F_TYPE_0 (0.0)
+    #define F_TYPE_PI (3.14159265358979323846)
+    #define DEFAULT_TOL (1.0e-6)
+
     #define F_TYPE_ABS(x) fabs(x)
     #define F_TYPE_SQRT(x) sqrt(x)
     #define F_TYPE_COS(x) cos(x)
     #define F_TYPE_SIN(x) sin(x)
     #define F_TYPE_ACOS(x) acos(x)
 #else
-    #error "need to specify math functions to use with type F_TYPE"
-#endif
-
-// common numerical constants, in the right types
-#if (F_TYPE == float)
-    #define F_TYPE_2 (2.0f)
-    #define F_TYPE_1 (1.0f)
-    #define F_TYPE_0 (0.0f)
-    #define F_TYPE_PI (3.14159265358979323846f)
-    #define DEFAULT_TOL (1.0e-4)
-#elif (F_TYPE == double)
-    #define F_TYPE_2 (2.0d)
-    #define F_TYPE_1 (1.0d)
-    #define F_TYPE_0 (0.0d)
-    #define F_TYPE_PI (3.14159265358979323846d)
-    #define DEFAULT_TOL (1.0e-6)
-#else
-    #error "need to specify numerical constants to use with type F_TYPE"
+    #error "invalid F_TYPE_SWITCH"
 #endif
 
 // the default tolerance for performing floating point comparisons
