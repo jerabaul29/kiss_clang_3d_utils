@@ -1,9 +1,26 @@
 #include "catch.hpp"
 #include "../src/kiss_clang_3d.h"
-#include "../src/cpp_printing_utils.h"
+#include "../src/kiss_clang_3d_extra_utils.h"
 
 // TODO: in all tests with some abs etc, add some cases with "small"
 // values, such as 0.1, 0.2, 0.3.
+
+TEST_CASE("vec3 setter"){
+    vec3 const v_res {1.0, 2.0, 3.0};
+    vec3 v {0.0, 0.0, 0.0};
+
+    vec3_setter(&v, 1.0, 2.0, 3.0);
+    REQUIRE( vec3_equal(&v, &v_res) );
+}
+
+TEST_CASE("vec3 copy"){
+    vec3 const v_in {1.0, 2.0, 3.0};
+    vec3 v_out {0.0, 0.0, 0.0};
+
+    REQUIRE( !vec3_equal(&v_in, &v_out));
+    vec3_copy(&v_in, &v_out);
+    REQUIRE( vec3_equal(&v_in, &v_out));
+}
 
 TEST_CASE("vec3 is_null"){
     vec3 v1 {0.0, 0.0, 0.0};
@@ -193,6 +210,23 @@ TEST_CASE("vec3 colinear"){
     vec3 w3 {1.0, 2.0, 2.0};
 
     REQUIRE( !vec3_colinear(&v3, &w3) );
+}
+
+TEST_CASE("quat setter"){
+    quat const q_res {1.0, 2.0, 3.0, 4.0};
+    quat q {0.0, 0.0, 0.0, 0.0};
+
+    quat_setter(&q, 1.0, 2.0, 3.0, 4.0);
+    quat_equal(&q, &q_res);
+}
+
+TEST_CASE("quat copy"){
+    quat const q_in {1.0, 2.0, 3.0, 4.0};
+    quat q_out {0.0, 0.0, 0.0, 0.0};
+
+    REQUIRE( !quat_equal(&q_in, &q_out) );
+    quat_copy(&q_in, &q_out);
+    REQUIRE( quat_equal(&q_in, &q_out) );
 }
 
 TEST_CASE("quat norm"){
@@ -448,16 +482,16 @@ TEST_CASE("quat_to_rotation"){
     );
     REQUIRE( !crrt_bool_result );
 
-    vec3 axis_i {1.0, 0.0, 0.0};
-    vec3 axis_j {0.0, 1.0, 0.0};
-    vec3 axis_k {0.0, 0.0, 1.0};
+    vec3 const axis_i {1.0, 0.0, 0.0};
+    vec3 const axis_j {0.0, 1.0, 0.0};
+    vec3 const axis_k {0.0, 0.0, 1.0};
 
     F_TYPE sqrt_2_o_2 {0.7071067811865476};
     F_TYPE pi_over_2 {1.5707963267948966};
 
-    quat quat_rot_i {sqrt_2_o_2, sqrt_2_o_2, 0.0, 0.0};
-    quat quat_rot_j {sqrt_2_o_2, 0.0, sqrt_2_o_2, 0.0};
-    quat quat_rot_k {sqrt_2_o_2, 0.0, 0.0, sqrt_2_o_2};
+    quat const quat_rot_i {sqrt_2_o_2, sqrt_2_o_2, 0.0, 0.0};
+    quat const quat_rot_j {sqrt_2_o_2, 0.0, sqrt_2_o_2, 0.0};
+    quat const quat_rot_k {sqrt_2_o_2, 0.0, 0.0, sqrt_2_o_2};
 
     // canonical rotations
 
@@ -521,15 +555,36 @@ TEST_CASE("convert_back_forth_rotation_quaternion"){
     REQUIRE( F_TYPE_ABS(rotation_angle_rad_1 - rotation_angle_rad_back_1) <= DEFAULT_TOL );
 
     // TODO: add some extra cases
-
 }
 
-
-
-
-
-
-
 TEST_CASE("rotate_by_quat"){
-    // we test all rotations by unit vectors
+    vec3 const axis_i {1.0, 0.0, 0.0};
+    vec3 const axis_j {0.0, 1.0, 0.0};
+    vec3 const axis_k {0.0, 0.0, 1.0};
+    vec3 const axis_mi {-1.0, 0.0, 0.0};
+    vec3 const axis_mj {0.0, -1.0, 0.0};
+    vec3 const axis_mk {0.0, 0.0, -1.0};
+
+    F_TYPE sqrt_2_o_2 {0.7071067811865476};
+
+    // rotations by angle pi
+    quat const quat_rot_i {sqrt_2_o_2, sqrt_2_o_2, 0.0, 0.0};
+    quat const quat_rot_j {sqrt_2_o_2, 0.0, sqrt_2_o_2, 0.0};
+    quat const quat_rot_k {sqrt_2_o_2, 0.0, 0.0, sqrt_2_o_2};
+    
+    vec3 working_vec3;
+
+    // check the basis rotations
+
+    // i, rotating by i: i
+    vec3_copy(&axis_i, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_i);
+    REQUIRE( vec3_equal(&axis_i, &working_vec3) );
+
+    // j, rotating by i: k
+    vec3_copy(&axis_j, &working_vec3);
+    rotate_by_quat(&working_vec3, &quat_rot_i);
+    REQUIRE( vec3_equal(&axis_k, &working_vec3) );
+    
+
 }

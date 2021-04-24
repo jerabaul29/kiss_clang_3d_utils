@@ -16,28 +16,30 @@
 // check for more optimal ways to compute quaternion product, rotation by
 // quaternion, and both of these using specifically unit quaternions; for this,
 // write funcs to work with specifically unit quaternions
+// 5
+// add function variations without the boolean checks
+
+// TODO
+// think if should remove some of the checks if things are unitary or not etc
 
 // ------------------------------------------------------------
 // MACROS
 // ------------------------------------------------------------
 
-// TODO: update comments and explanations
+#define XSTR(x) STR(x)
+#define STR(x) #x
 
-// our fundamental type; this will be the type used for all
-// members of vectors, quaternions, DCM matrices, etc.
+// what fundamental type do we want to use?
+#ifndef F_TYPE_SWITCH
+  // double is 'D', float is 'F'
+  #define F_TYPE_SWITCH 'D'
+#endif
 
-// double
-#define F_TYPE_SWITCH 'D'
-// float
-// #define F_TYPE_SWITCH 'F'
-
-// a bit of type-tuning to F_TYPE
-// the F_TYPE
-// the C "absolute value" function, https://www.cplusplus.com/reference/cmath/fabs/
-// the C cos and sine functions
-// common numeric constants in the right types
+// we need to adapt a bit to what sort of fundamental type we want to use
 #if (F_TYPE_SWITCH == 'F')
     #define F_TYPE double
+
+    #define F_SFX f
 
     #define F_TYPE_2 (2.0f)
     #define F_TYPE_1 (1.0f)
@@ -50,8 +52,11 @@
     #define F_TYPE_COS(x) cosf(x)
     #define F_TYPE_SIN(x) sinf(x)
     #define F_TYPE_ACOS(x) acosf(x)
+
 #elif (F_TYPE_SWITCH == 'D')
     #define F_TYPE double
+
+    #define F_SFX
 
     #define F_TYPE_2 (2.0)
     #define F_TYPE_1 (1.0)
@@ -65,11 +70,9 @@
     #define F_TYPE_SIN(x) sin(x)
     #define F_TYPE_ACOS(x) acos(x)
 #else
-    #error "invalid F_TYPE_SWITCH"
+    #pragma message "The value of F_TYPE_SWITCH: " XSTR(F_TYPE_SWITCH)
+    #error "invalid F_TYPE_SWITCH admissible switches are F (float) and D (double)"
 #endif
-
-// the default tolerance for performing floating point comparisons
-// TODO: set difference tol depending on F_TYPE
 
 
 // ------------------------------------------------------------
@@ -111,6 +114,16 @@ struct varot {
 // ---------------------------------------------
 // VEC3 functions
 // ---------------------------------------------
+
+/*
+Setter, in the right order
+*/
+void vec3_setter(vec3 * v, F_TYPE vi, F_TYPE vj, F_TYPE vk);
+
+/*
+Copy, 'deep'.
+*/
+void vec3_copy(vec3 const * v_in, vec3 * v_out);
 
 /*
 Check if a vector is the null vector, up to a tolerance
@@ -171,6 +184,16 @@ bool vec3_colinear(vec3 const * v, vec3 const * w, F_TYPE tolerance=DEFAULT_TOL)
 // ---------------------------------------------
 // QUAT functions
 // ---------------------------------------------
+
+/*
+Setter for quaternion
+*/
+void quat_setter(quat * q, F_TYPE qr, F_TYPE qi, F_TYPE qj, F_TYPE qk);
+
+/*
+Copy, deep
+*/
+void quat_copy(quat const * q_in, quat * q_out);
 
 /*
 Norm of a quaternion
@@ -259,6 +282,18 @@ bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance=DEFAULT_TOL);
 // DEFINITIONS
 // ------------------------------------------------------------
 
+void vec3_setter(vec3 * v, F_TYPE vi, F_TYPE vj, F_TYPE vk){
+    v->i = vi;
+    v->j = vj;
+    v->k = vk;
+}
+
+void vec3_copy(vec3 const * v_in, vec3 * v_out){
+    v_out->i = v_in->i;
+    v_out->j = v_in->j;
+    v_out->k = v_in->k;
+}
+
 bool vec3_is_null(vec3 const * v1, F_TYPE tolerance){
     return(
         F_TYPE_ABS(v1->i) <= tolerance &&
@@ -338,6 +373,20 @@ bool vec3_colinear(vec3 const * v, vec3 const * w, F_TYPE tolerance){
     return vec3_is_null(&result_cross_product, tolerance);
 }
 
+void quat_setter(quat * q, F_TYPE qr, F_TYPE qi, F_TYPE qj, F_TYPE qk){
+    q->r = qr;
+    q->i = qi;
+    q->j = qj;
+    q->k = qk;
+}
+
+void quat_copy(quat const * q_in, quat * q_out){
+    q_out->r = q_in->r;
+    q_out->i = q_in->i;
+    q_out->j = q_in->j;
+    q_out->k = q_in->k;
+}
+
 F_TYPE quat_norm(quat const * q){
     return(
         F_TYPE_SQRT(
@@ -373,6 +422,7 @@ bool quat_is_unitary(quat const * q, F_TYPE tolerance){
     );
 }
 
+// TODO: is there a more computationally efficient way to take quat product? To take quat product for unit quats?
 void quat_prod(quat const * q_left, quat const * q_right, quat * q_result){
     q_result->r = q_left->r * q_right->r  -  q_left->i * q_right->i  -  q_left->j * q_right->j  -  q_left->k * q_right->k;
     q_result->i = q_left->r * q_right->i  +  q_left->i * q_right->r  +  q_left->j * q_right->k  -  q_left->k * q_right->j;
@@ -397,7 +447,7 @@ void quat_sub(quat * q_acc, quat const * q_sub){
 bool quat_inv(quat * q, F_TYPE tolerance){
     F_TYPE norm_square = quat_norm_square(q);
 
-    if (F_TYPE_ABS(norm_square < tolerance)){
+    if (norm_square < tolerance){
         return false;
     }
     else{
@@ -458,7 +508,6 @@ bool rotation_to_quat(quat * q, vec3 const * rotation_axis, F_TYPE const rotatio
     return true;
 }
 
-// TODO: write test
 bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat const * q_rotation, F_TYPE tolerance){
     if (!quat_is_unitary(q_rotation, tolerance)){
         return false;
@@ -474,34 +523,36 @@ bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat co
     }
 }
 
+// the naive way, applying the definition; this is quite inefficient though
+bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance){
+    if (!quat_is_unitary(q)){
+        return false;
+    }
 
+    quat q_1;
+    quat q_2;
+    quat q_3;
 
+    // q_1 is the quat out of v
+    vec3_to_quat(v, &q_1);
 
+    // q_2 is the rotation quat conjugate
+    quat_copy(q, &q_2);
+    quat_conj(&q_2);
 
+    // q_3 contains the right part of the product
+    quat_prod(&q_1, &q_2, &q_3);
 
+    // q_2 is the rotation quat
+    quat_conj(&q_2);
 
+    // q_1 contains the full quaternion
+    quat_prod(&q_2, &q_3, &q_1);
 
+    // make the result available
+    quat_to_vec3(&q_1, v);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-bool rotate_by_quat(vec3 * v, quat const * q){
-
+    return true;
 }
 
 #endif
