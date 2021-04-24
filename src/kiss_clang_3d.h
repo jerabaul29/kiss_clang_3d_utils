@@ -21,8 +21,11 @@
 // MACROS
 // ------------------------------------------------------------
 
+// TODO: update comments and explanations
+
 // our fundamental type; this will be the type used for all
 // members of vectors, quaternions, DCM matrices, etc.
+
 // double
 #define F_TYPE_SWITCH 'D'
 // float
