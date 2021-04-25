@@ -632,3 +632,65 @@ TEST_CASE("rotate_by_quat"){
     rotate_by_quat(&working_vec3, &quat_rot_k);
     REQUIRE( vec3_equal(&axis_k, &working_vec3) );
 }
+
+TEST_CASE("rotate_by_quat_R"){
+    vec3 const axis_i {1.0, 0.0, 0.0};
+    vec3 const axis_j {0.0, 1.0, 0.0};
+    vec3 const axis_k {0.0, 0.0, 1.0};
+    vec3 const axis_mi {-1.0, 0.0, 0.0};
+    vec3 const axis_mj {0.0, -1.0, 0.0};
+    vec3 const axis_mk {0.0, 0.0, -1.0};
+
+    F_TYPE sqrt_2_o_2 {0.7071067811865476};
+
+    // rotations by angle pi
+    quat const quat_rot_i {sqrt_2_o_2, sqrt_2_o_2, 0.0, 0.0};
+    quat const quat_rot_j {sqrt_2_o_2, 0.0, sqrt_2_o_2, 0.0};
+    quat const quat_rot_k {sqrt_2_o_2, 0.0, 0.0, sqrt_2_o_2};
+    
+    vec3 working_vec3;
+
+    // check the basis rotations
+
+    // rotating by i
+
+    // i, rotating by i: i
+    rotate_by_quat_R(&axis_i, &quat_rot_i, &working_vec3);
+    REQUIRE( vec3_equal(&axis_i, &working_vec3) );
+
+    // j, rotating by i: k
+    rotate_by_quat_R(&axis_j, &quat_rot_i, &working_vec3);
+    REQUIRE( vec3_equal(&axis_k, &working_vec3) );
+
+    // k, rotating by i: -j
+    rotate_by_quat_R(&axis_k, &quat_rot_i, &working_vec3);
+    REQUIRE( vec3_equal(&axis_mj, &working_vec3) );
+
+    // rotating by j
+
+    // i, rotating by j: -k
+    rotate_by_quat_R(&axis_i, &quat_rot_j, &working_vec3);
+    REQUIRE( vec3_equal(&axis_mk, &working_vec3) );
+
+    // j, rotating by j: j
+    rotate_by_quat_R(&axis_j, &quat_rot_j, &working_vec3);
+    REQUIRE( vec3_equal(&axis_j, &working_vec3) );
+
+    // k, rotating by j: i
+    rotate_by_quat_R(&axis_k, &quat_rot_j, &working_vec3);
+    REQUIRE( vec3_equal(&axis_i, &working_vec3) );
+
+    // rotating by k
+
+    // i, rotating by k: j
+    rotate_by_quat_R(&axis_i, &quat_rot_k, &working_vec3);
+    REQUIRE( vec3_equal(&axis_j, &working_vec3) );
+
+    // j, rotating by k: -i
+    rotate_by_quat_R(&axis_j, &quat_rot_k, &working_vec3);
+    REQUIRE( vec3_equal(&axis_mi, &working_vec3) );
+
+    // k, rotating by k: k
+    rotate_by_quat_R(&axis_k, &quat_rot_k, &working_vec3);
+    REQUIRE( vec3_equal(&axis_k, &working_vec3) );
+}

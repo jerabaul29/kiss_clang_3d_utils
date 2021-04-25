@@ -30,12 +30,15 @@
 #define STR(x) #x
 
 // what fundamental type do we want to use?
+// if the F_TYPE_SWITCH is set (by defining the macro earlier, either before #includ-ing, or
+// by defining the compilation flag -DF_TYPE_SWITCH="'X'" where X is the type flag wanted),
+// use it, otherwise, use the value set under.
 #ifndef F_TYPE_SWITCH
   // double is 'D', float is 'F'
   #define F_TYPE_SWITCH 'D'
 #endif
 
-// we need to adapt a bit to what sort of fundamental type we want to use
+// this ic C, no overloading, we need to adapt a bit to what sort of fundamental type we want to use
 #if (F_TYPE_SWITCH == 'F')
     #define F_TYPE float
     #define F_CAST (float)
@@ -45,6 +48,7 @@
     #define F_TYPE_2 (2.0f)
     #define F_TYPE_1 (1.0f)
     #define F_TYPE_0 (0.0f)
+    #define F_TYPE_05 (0.5f)
     #define F_TYPE_PI (3.14159265358979323846f)
     // TODO: is there a way to write a float in scientific notation?
     #define DEFAULT_TOL (0.0001f)
@@ -64,6 +68,7 @@
     #define F_TYPE_2 (2.0)
     #define F_TYPE_1 (1.0)
     #define F_TYPE_0 (0.0)
+    #define F_TYPE_05 (0.5)
     #define F_TYPE_PI (3.14159265358979323846)
     #define DEFAULT_TOL (1.0e-6)
 
@@ -275,11 +280,23 @@ return a rotation axis that has unit norm.
 bool quat_to_rotation(vec3 * rotation_axis, F_TYPE * rotation_angle_rad, quat const * q_rotation, F_TYPE tolerance=DEFAULT_TOL);
 
 /*
-Rotate a vector by a given quaternion, using the (fast) Rodriguez method.
-This is only valid for unit quaternions, so provide a return flag to indicate
-validity.
+Rotate a vector by a given quaternion, using the direct method:
+[0, R(v)] = q x [0, v] x q*
+This is the simplest method, but quite slow.
+Only unit quaternions are pure rotations; provide a bool flag indicating if this is valid.
 */
-bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance=DEFAULT_TOL);
+bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance=DEFAULT_TOL) __attribute__((deprecated("prefer using rotate_by_quat_R with is faster")));
+
+/*
+Rotate a vector by a unit quaternion, using the "Rodriguez" formula:
+https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+q = [s, u], s the scalar part, u the vector part
+R(v) = 2.0 ( (u . v) u + (s * s - 0.5) v + s (u x v) )
+This is quite a bit faster. This assumes that a unit quaternion is provided
+(but not checked, for speed; providing a unit quaternion is the caller's
+responsibility).
+*/
+void rotate_by_quat_R(vec3 const * v, quat const * q, vec3 * Rv);
 
 // ------------------------------------------------------------
 // DEFINITIONS
@@ -557,5 +574,19 @@ bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance){
 
     return true;
 }
+
+void rotate_by_quat_R(vec3 const * v, quat const * q, vec3 * Rv){
+    // reminder of the formula:
+    // q = [s, u]
+    // R(v) = 2.0 ( (u . v) u + (s * s - 0.5) v + s (u x v) )
+
+    F_TYPE u_dot_v = q->i * v->i + q->j * v->j + q->k * v->k;
+    F_TYPE s2m05 = q->r * q->r - F_TYPE_05;
+    Rv->i = F_TYPE_2 * ( u_dot_v * q->i + s2m05 * v->i + q->r * ( q->j * v->k - q->k * v->j ) );
+    Rv->j = F_TYPE_2 * ( u_dot_v * q->j + s2m05 * v->j + q->r * ( q->k * v->i - q->i * v->k ) );
+    Rv->k = F_TYPE_2 * ( u_dot_v * q->k + s2m05 * v->k + q->r * ( q->i * v->j - q->j * v->i ) );
+}
+
+// TODO: implement the other way to do, and test which is faster :)
 
 #endif
