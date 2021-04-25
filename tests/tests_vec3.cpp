@@ -2,8 +2,13 @@
 #include "../src/kiss_clang_3d.h"
 #include "../src/kiss_clang_3d_extra_utils.h"
 
-// TODO: in all tests with some abs etc, add some cases with "small"
+// TODO
+// in all tests with some abs etc, add some cases with "small"
 // values, such as 0.1, 0.2, 0.3.
+// TODO
+// refactor into several files
+// TODO
+// put the axis, quats, etc as common thing to not re define all the time
 
 TEST_CASE("vec3 setter"){
     vec3 const v_res {1.0, 2.0, 3.0};
