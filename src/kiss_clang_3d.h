@@ -37,7 +37,8 @@
 
 // we need to adapt a bit to what sort of fundamental type we want to use
 #if (F_TYPE_SWITCH == 'F')
-    #define F_TYPE double
+    #define F_TYPE float
+    #define F_CAST (float)
 
     #define F_SFX f
 
@@ -45,7 +46,8 @@
     #define F_TYPE_1 (1.0f)
     #define F_TYPE_0 (0.0f)
     #define F_TYPE_PI (3.14159265358979323846f)
-    #define DEFAULT_TOL (1.0e-4)
+    // TODO: is there a way to write a float in scientific notation?
+    #define DEFAULT_TOL (0.0001f)
 
     #define F_TYPE_ABS(x) fabsf(x)
     #define F_TYPE_SQRT(x) sqrtf(x)
@@ -55,6 +57,7 @@
 
 #elif (F_TYPE_SWITCH == 'D')
     #define F_TYPE double
+    #define F_CAST (double)
 
     #define F_SFX
 
