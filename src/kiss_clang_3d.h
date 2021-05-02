@@ -1,6 +1,7 @@
 #ifndef KISS_CLANG_3D_UTILS_H
 #define KISS_CLANG_3D_UTILS_H
 
+// TODO: use math or cmath depending on c or cpp compiler
 #include <cmath>
 
 // TODO
@@ -285,7 +286,11 @@ Rotate a vector by a given quaternion, using the direct method:
 This is the simplest method, but quite slow.
 Only unit quaternions are pure rotations; provide a bool flag indicating if this is valid.
 */
-bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance=DEFAULT_TOL) __attribute__((deprecated("prefer using rotate_by_quat_R with is faster")));
+#ifdef KISS_CLANG_3D_IGNORE_DEPRECATED
+  bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance=DEFAULT_TOL);
+#else
+  bool rotate_by_quat(vec3 * v, quat const * q, F_TYPE tolerance=DEFAULT_TOL) __attribute__((deprecated("prefer using rotate_by_quat_R with is faster")));
+#endif
 
 /*
 Rotate a vector by a unit quaternion, using the "Rodriguez" formula:
