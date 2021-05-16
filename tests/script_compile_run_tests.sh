@@ -6,7 +6,7 @@
 # consider if moving to some form of make or cmake may be cleaner
 
 # warning flags
-WFLAGS="-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused -Wconversion -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wnull-dereference -Wuseless-cast -Wdouble-promotion -fno-common -std=c++1z -Wfloat-conversion"
+WFLAGS="-pedantic -Wall -Wextra -Werror -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused -Wconversion -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wnull-dereference -Wuseless-cast -Wdouble-promotion -fno-common -std=c++1z -Wfloat-conversion"
 
 echo " "
 echo "We will run all tests twice:"
@@ -17,7 +17,7 @@ echo " "
 echo "--------------------"
 echo "compile all tests for double"
 
-g++ $WFLAGS -DF_TYPE_SWITCH="'D'" -DKISS_CLANG_3D_IGNORE_DEPRECATED -o test_suite.out main.cpp test*.cpp
+g++ $WFLAGS -DF_TYPE_SWITCH="'D'" -DKISS_CLANG_3D_IGNORE_DEPRECATED -o test_suite.out main.cpp test*.cpp ../src/kiss_clang_3d.c ../src/kiss_clang_3d_extra_utils.cpp
 
 echo " "
 echo "--------------------"
@@ -33,7 +33,7 @@ echo " "
 echo "--------------------"
 echo "compile all tests for float"
 
-g++ $WFLAGS -DF_TYPE_SWITCH="'F'" -DKISS_CLANG_3D_IGNORE_DEPRECATED -fsingle-precision-constant -o test_suite.out main.cpp test*.cpp
+g++ $WFLAGS -DF_TYPE_SWITCH="'F'" -DKISS_CLANG_3D_IGNORE_DEPRECATED -fsingle-precision-constant -o test_suite.out main.cpp test*.cpp ../src/kiss_clang_3d.c ../src/kiss_clang_3d_extra_utils.cpp
 
 echo " "
 echo "--------------------"
