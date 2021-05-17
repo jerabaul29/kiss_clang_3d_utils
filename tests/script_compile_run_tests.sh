@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Just a simple script to build all tests, run them, show the results, and clean up.
 
