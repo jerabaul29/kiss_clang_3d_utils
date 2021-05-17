@@ -10,9 +10,11 @@ The aim is to keep the code as simple and short as possible, but not too simple 
 
 ## Library installation
 
-The whole library is provided as a couple of clang files, i.e. **src/kiss_clang_3d_utils.h/c**. Copy these and / or make it accessible to your project, and you are ready to go. The only thing you should need to do is to set the fundamental type you want to use in the ```#define F_TYPE``` definition at the start of the header. Both ```float``` and ```double``` should work nicely. Both are unit tested.
+The whole library is provided as a couple of clang files, i.e. **src/kiss_clang_3d_utils.h/c**. Copy these and / or make them accessible to your project, and you are ready to go. The only thing you should need to do is to set the fundamental type you want to use in the ```#define F_TYPE``` definition at the start of the header. Both ```float``` and ```double``` should work nicely. Both are unit tested.
 
-Made available under the MIT license: no guarantees whatsoever, but do whatever you want with it.
+## License
+
+Made available under the MIT license: no guarantees whatsoever, but do whatever you want with the content of this repository.
 
 ## Tests
 
