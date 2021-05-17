@@ -22,7 +22,7 @@ void vec3_copy(Vec3 const * v_in, Vec3 * v_out){
 
 bool vec3_is_null(Vec3 const * v1, F_TYPE tolerance){
     return(
-        F_TYPE_ABS(v1->i) <= tolerance &&
+        absf(v1->i) <= tolerance &&
         F_TYPE_ABS(v1->j) <= tolerance &&
         F_TYPE_ABS(v1->k) <= tolerance
     );
