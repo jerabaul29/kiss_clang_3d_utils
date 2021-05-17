@@ -14,4 +14,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: test
-      run: cd kiss_clang_3d_utils/tests && ./script_compile_run_tests.sh
+      run: cd tests && ./script_compile_run_tests.sh
