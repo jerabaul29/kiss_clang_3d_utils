@@ -1,6 +1,8 @@
 #ifndef KISS_CLANG_3D_UTILS_H
 #define KISS_CLANG_3D_UTILS_H
 
+// for more information, see: https://github.com/jerabaul29/kiss_clang_3d_utils
+
 // use <math> with C compiler, or <cmath> with C++ compiler
 #ifdef __cplusplus
   #include <cmath>

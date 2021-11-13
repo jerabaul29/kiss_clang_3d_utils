@@ -1,5 +1,7 @@
 #include "kiss_clang_3d.h"
 
+// for more information, see: https://github.com/jerabaul29/kiss_clang_3d_utils
+
 // ------------------------------------------------------------
 // DEFINITIONS
 // ------------------------------------------------------------

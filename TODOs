@@ -1,2 +1,3 @@
-- add header about where to find the repo to the main file
-- change to a CMake or make workflow for testing:q
+- rotva tooling
+- name updates
+- change to a CMake or make workflow for testing
